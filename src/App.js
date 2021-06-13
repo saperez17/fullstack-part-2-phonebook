@@ -34,25 +34,39 @@ const PersonForm = ({ formSubmitHandler, inputHandler, newContact }) => {
   );
 };
 
-const Person = ({ name, number, id }) => {
+const Person = ({ name, number, id ,deleteClickHandler}) => {
   return (
     <div key={id}>
       {name} {number}
+      <button onClick={deleteClickHandler}>delete</button>
     </div>
   );
 };
-const Persons = ({ contacts }) => {
+const Persons = ({ persons, filter, setPersons }) => {
+  const fileredContacts = persons.filter((person) =>
+    person.name.toLowerCase().startsWith(filter.toLowerCase())
+  );
+  const onDeleteHandler = id =>{
+    const toDeleteContact = persons.filter(contact => contact.id===id);
+    const userConfirmation = window.confirm(`Are you sure you want to delete ${toDeleteContact.name}`);
+    if(userConfirmation){
+      personService.deleteContact(id)
+      .then(response=>{
+        setPersons(persons.filter(person => person.id !== id));
+      })
+    }
+  }
+
   return (
     <div>
-      {contacts.map((person, key) => (
-        <Person name={person.name} number={person.number} id={person.id}/>
+      {fileredContacts.map((person, key) => (
+        <Person name={person.name} number={person.number} id={person.id} deleteClickHandler={()=>onDeleteHandler(person.id)}/>
       ))}
     </div>
   );
 };
 const App = () => {
-  const [persons, setPersons] = useState([
-  ]);
+  const [persons, setPersons] = useState([]);
   const [newContact, setNewContact] = useState({ name: "", number: "" });
   const [filter, setFilter] = useState("");
 
@@ -88,9 +102,7 @@ const App = () => {
     setFilter(e.target.value);
   };
 
-  const fileredContacts = persons.filter((person) =>
-    person.name.toLowerCase().startsWith(filter.toLowerCase())
-  );
+  
   return (
     <div>
       <h2>Phonebook</h2>
@@ -104,7 +116,7 @@ const App = () => {
         newContact={newContact}
       />
       <h2>Numbers</h2>
-      <Persons contacts={fileredContacts} />
+      <Persons persons={persons} setPersons={setPersons} filter={filter} />
     </div>
   );
 };
