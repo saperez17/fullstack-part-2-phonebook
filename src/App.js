@@ -95,7 +95,17 @@ const App = () => {
         setPersons((prevState) => [...prevState, newContact])
         setNewContact({ name: "", number: "" });
       })
-    } else alert(`${newContact.name} is already added to phonebook`);
+    } else {
+      const userConfirmation = window.confirm(`${userSearch.name} is already added to phonebook, replace the old number with a new one?`);
+      if (userConfirmation){
+        userSearch.number = newContact.number
+        personService.update(userSearch.id, userSearch)
+        .then(contactUpdateResponse =>{
+          console.log(contactUpdateResponse);
+          setNewContact({ name: "", number: "" });
+        })
+      }
+    }
   };
 
   const onChangeSearch = (e) => {
