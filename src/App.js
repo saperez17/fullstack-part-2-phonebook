@@ -54,6 +54,9 @@ const Persons = ({ persons, filter, setPersons }) => {
       .then(response=>{
         setPersons(persons.filter(person => person.id !== id));
       })
+      .catch(err=>{
+        console.log("error here")
+      })
     }
   }
 
@@ -66,11 +69,11 @@ const Persons = ({ persons, filter, setPersons }) => {
   );
 };
 
-const Notification = ({message})=>{
-  if (message===null) return null
+const Notification = ({notification})=>{
+  if (notification.content===null) return null
   return(
-    <div className="notification">
-      {message}
+    <div className={notification.type===1?"notificationSuccess":"notificationError"}>
+      {notification.content}
     </div>
   )
 }
@@ -79,7 +82,7 @@ const App = () => {
   const [persons, setPersons] = useState([]);
   const [newContact, setNewContact] = useState({ name: "", number: "" });
   const [filter, setFilter] = useState("");
-  const [notificationMessage, setNotificationMessage] = useState(null)
+  const [notificationMessage, setNotificationMessage] = useState({content:null, type:null})
 
   useEffect(()=>{
     personService.getAll()
@@ -103,12 +106,29 @@ const App = () => {
     if (!userSearch) {
       personService.create(newContact)
       .then(createdPerson =>{
-        setNotificationMessage(`${newContact.name} added successfully!`)
+        console.log("created person", createdPerson)
+        setNotificationMessage(
+          prevState=>(
+            {
+              ...prevState,
+              content: `${newContact.name} added successfully!`,
+              type: 1
+            }
+          ))
         setTimeout(()=>{
-          setNotificationMessage(null)
+          setNotificationMessage(prevState=>(
+            {
+              ...prevState,
+              content: null,
+              type: null
+            }
+          ))
         }, 5000)
-        setPersons((prevState) => [...prevState, newContact])
+        setPersons((prevState) => [...prevState, createdPerson])
         setNewContact({ name: "", number: "" });
+      })
+      .catch(err => {
+        console.log("error", err)
       })
     } else {
       const userConfirmation = window.confirm(`${userSearch.name} is already added to phonebook, replace the old number with a new one?`);
@@ -116,11 +136,43 @@ const App = () => {
         userSearch.number = newContact.number
         personService.update(userSearch.id, userSearch)
         .then(contactUpdateResponse =>{          
-          setNotificationMessage(`${userSearch.name} updated successfully!`)
+          // `${userSearch.name} updated successfully!`
+          setNotificationMessage(prevState=>(
+            {
+              ...prevState,
+              content: `${userSearch.name} updated successfully!`,
+              type: 1
+            }
+          ))
           setTimeout(()=>{
-            setNotificationMessage(null)
+            setNotificationMessage(prevState=>(
+              {
+                ...prevState,
+                content: null,
+                type: null
+              }
+            ))
           }, 5000)
           setNewContact({ name: "", number: "" });
+        }).catch(err=>{
+          setPersons(persons.filter(person=>person.id !== userSearch))
+          
+          setNotificationMessage(prevState=>(
+            {
+              ...prevState,
+              content: `Information of ${userSearch.name} has already been removed from the server.`,
+              type: 0
+            }
+          ))
+          setTimeout(()=>{
+            setNotificationMessage(prevState=>(
+              {
+                ...prevState,
+                content: null,
+                type: null
+              }
+            ))
+          }, 5000)
         })
       }
     }
@@ -134,7 +186,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification  message={notificationMessage}/>
+      <Notification  notification={notificationMessage}/>
       <Filter onChangeSearch={onChangeSearch} filterInputValue={filter} />
 
       <h2>add a new</h2>

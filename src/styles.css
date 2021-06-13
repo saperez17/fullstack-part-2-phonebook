@@ -3,12 +3,21 @@
   text-align: center;
 }
 
-.notification{
+.notificationSuccess{
   color: green;
   font-size: 2rem;
   border-radius: 5px;
   padding: 1rem;
   background-color: rgb(202, 202, 202);
   border: 0.2rem solid green;
+  margin-bottom: 0.5rem;
+}
+.notificationError{
+  color: red;
+  font-size: 2rem;
+  border-radius: 5px;
+  padding: 1rem;
+  background-color: rgb(202, 202, 202);
+  border: 0.2rem solid red;
   margin-bottom: 0.5rem;
 }
