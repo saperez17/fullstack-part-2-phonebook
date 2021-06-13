@@ -1,23 +1,104 @@
-import { useState } from "react";
+import axios from "axios";
+import { useState, useEffect } from "react";
 import "./styles.css";
 
-const App = () => {
-  const [persons, setPersons] = useState([{ name: "Arto Hellas" }]);
-  const [newName, setNewName] = useState("");
+const Filter = ({ onChangeSearch, filterInputValue }) => {
+  return (
+    <div>
+      filter shown with{" "}
+      <input onChange={onChangeSearch} value={filterInputValue} />
+    </div>
+  );
+};
 
+const PersonForm = ({ formSubmitHandler, inputHandler, newContact }) => {
+  return (
+    <form onSubmit={formSubmitHandler}>
+      <div>
+        name:{" "}
+        <input name="name" onChange={inputHandler} value={newContact.name} />
+      </div>
+      <div>
+        number:{" "}
+        <input
+          name="number"
+          onChange={inputHandler}
+          value={newContact.number}
+        />
+      </div>
+      <div>
+        <button type="submit">add</button>
+      </div>
+    </form>
+  );
+};
+
+const Person = ({ name, number, id }) => {
+  return (
+    <div key={id}>
+      {name} {number}
+    </div>
+  );
+};
+const Persons = ({ contacts }) => {
+  return (
+    <div>
+      {contacts.map((person, key) => (
+        <Person name={person.name} number={person.number} id={person.id}/>
+      ))}
+    </div>
+  );
+};
+const App = () => {
+  const [persons, setPersons] = useState([
+  ]);
+  const [newContact, setNewContact] = useState({ name: "", number: "" });
+  const [filter, setFilter] = useState("");
+
+  useEffect(()=>{
+    axios.get("http://localhost:3001/persons")
+    .then(response=>{
+      console.log(response.data)
+      setPersons(response.data)
+    })
+  }, [])
+  const inputHandler = (e) => {
+    setNewContact((prevState) => ({
+      ...prevState,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  const formSubmitHandler = (e) => {
+    e.preventDefault();
+    let userSearch = persons.find((person) => person.name === newContact.name);
+    if (!userSearch) {
+      setPersons((prevState) => [...persons, { name: newContact.name }]);
+      setNewContact({ name: "", number: "" });
+    } else alert(`${newContact.name} is already added to phonebook`);
+  };
+
+  const onChangeSearch = (e) => {
+    setFilter(e.target.value);
+  };
+
+  const fileredContacts = persons.filter((person) =>
+    person.name.toLowerCase().startsWith(filter.toLowerCase())
+  );
   return (
     <div>
       <h2>Phonebook</h2>
-      <form>
-        <div>
-          name: <input />
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
+
+      <Filter onChangeSearch={onChangeSearch} filterInputValue={filter} />
+
+      <h2>add a new</h2>
+      <PersonForm
+        formSubmitHandler={formSubmitHandler}
+        inputHandler={inputHandler}
+        newContact={newContact}
+      />
       <h2>Numbers</h2>
-      ...
+      <Persons contacts={fileredContacts} />
     </div>
   );
 };
