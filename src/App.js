@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
+import personService from './services/persons';
 import "./styles.css";
 
 const Filter = ({ onChangeSearch, filterInputValue }) => {
@@ -56,10 +57,12 @@ const App = () => {
   const [filter, setFilter] = useState("");
 
   useEffect(()=>{
-    axios.get("http://localhost:3001/persons")
-    .then(response=>{
-      console.log(response.data)
-      setPersons(response.data)
+    personService.getAll()
+    .then(initialPersons=>{
+      setPersons(initialPersons)
+    })
+    .catch(error =>{
+      console.log("Something went wrong")
     })
   }, [])
   const inputHandler = (e) => {
@@ -73,8 +76,11 @@ const App = () => {
     e.preventDefault();
     let userSearch = persons.find((person) => person.name === newContact.name);
     if (!userSearch) {
-      setPersons((prevState) => [...persons, { name: newContact.name }]);
-      setNewContact({ name: "", number: "" });
+      personService.create(newContact)
+      .then(createdPerson =>{
+        setPersons((prevState) => [...prevState, newContact])
+        setNewContact({ name: "", number: "" });
+      })
     } else alert(`${newContact.name} is already added to phonebook`);
   };
 
