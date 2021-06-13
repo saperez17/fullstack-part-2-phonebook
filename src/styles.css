@@ -2,3 +2,13 @@
   font-family: sans-serif;
   text-align: center;
 }
+
+.notification{
+  color: green;
+  font-size: 2rem;
+  border-radius: 5px;
+  padding: 1rem;
+  background-color: rgb(202, 202, 202);
+  border: 0.2rem solid green;
+  margin-bottom: 0.5rem;
+}
